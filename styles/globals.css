@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  background-color: #10141f;
+  color: #edeef3;
+  font-family: "Inter", sans-serif;
+}
+
+h1, h2, h3, .font-display {
+  font-family: "Fraunces", serif;
+}
+
+/* Radiating tap rings, used once on the hero — not scattered everywhere */
+@keyframes tap-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+.tap-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 1px solid #c9a227;
+  animation: tap-ring 2.4s ease-out infinite;
+}
+
+.tap-ring-delay {
+  animation-delay: 0.8s;
+}
+
+.tap-ring-delay-2 {
+  animation-delay: 1.6s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap-ring {
+    animation: none;
+    display: none;
+  }
+}
+
+::selection {
+  background: #c9a227;
+  color: #10141f;
+}
