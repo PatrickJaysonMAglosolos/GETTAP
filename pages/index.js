@@ -83,10 +83,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <footer className="max-w-5xl mx-auto w-full px-6 py-8 text-xs text-muted">
-        Built with Next.js and Supabase.
-      </footer>
     </div>
   );
 }

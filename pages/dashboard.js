@@ -13,7 +13,6 @@ export default function Dashboard() {
   const [newLabel, setNewLabel] = useState("");
   const [newUrl, setNewUrl] = useState("");
   const [saving, setSaving] = useState(false);
-  const [nfcStatus, setNfcStatus] = useState("");
   const [copied, setCopied] = useState(false);
 
   const loadData = useCallback(async (userId) => {
@@ -122,23 +121,6 @@ export default function Dashboard() {
     setTimeout(() => setCopied(false), 1500);
   }
 
-  async function writeNfcTag() {
-    if (!("NDEFReader" in window)) {
-      setNfcStatus(
-        "Web NFC isn't supported here. Use Chrome on Android, or write the tag with the free NFC Tools app instead."
-      );
-      return;
-    }
-    try {
-      setNfcStatus("Hold an NFC tag against the back of your phone...");
-      const ndef = new window.NDEFReader();
-      await ndef.write({ records: [{ recordType: "url", data: profileUrl }] });
-      setNfcStatus("Tag written. Tap it with any phone to test it.");
-    } catch (err) {
-      setNfcStatus("Couldn't write the tag: " + err.message);
-    }
-  }
-
   if (loadingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center text-muted">
@@ -159,7 +141,7 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-3xl mx-auto px-6 pb-24 flex flex-col gap-10">
-        {/* Your card link + NFC */}
+        {/* Your page link */}
         <section className="bg-ink-surface border border-ink-border rounded-card p-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
@@ -173,28 +155,8 @@ export default function Dashboard() {
               >
                 {copied ? "Copied" : "Copy link"}
               </button>
-              <button
-                onClick={writeNfcTag}
-                className="bg-brass text-ink px-4 py-2 rounded-card text-sm font-medium hover:brightness-110"
-              >
-                Write NFC tag
-              </button>
             </div>
           </div>
-          {nfcStatus && (
-            <p className="text-sm text-teal mt-4">{nfcStatus}</p>
-          )}
-          {profileUrl && (
-            <img
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(
-                profileUrl
-              )}`}
-              alt="QR code for your page"
-              className="mt-5 rounded-sm border border-ink-border"
-              width={140}
-              height={140}
-            />
-          )}
         </section>
 
         {/* Profile info */}
