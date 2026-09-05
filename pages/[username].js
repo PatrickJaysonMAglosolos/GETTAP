@@ -76,7 +76,7 @@ export default function PublicProfile({ profile, links }) {
         <p className="text-xs text-muted mt-16">
           Made with{" "}
           <a href="/" className="underline">
-            Tapcard
+            GETTAP
           </a>
         </p>
       </div>
