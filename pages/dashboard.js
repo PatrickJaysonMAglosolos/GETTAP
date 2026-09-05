@@ -15,6 +15,11 @@ export default function Dashboard() {
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const [qrLabel, setQrLabel] = useState("");
+  const [qrFile, setQrFile] = useState(null);
+  const [uploadingQr, setUploadingQr] = useState(false);
+  const [qrError, setQrError] = useState("");
+
   const loadData = useCallback(async (userId) => {
     const { data: profileData } = await supabase
       .from("profiles")
@@ -78,6 +83,7 @@ export default function Dashboard() {
         profile_id: profile.id,
         label: newLabel.trim(),
         url,
+        type: "link",
         position: links.length,
       })
       .select()
@@ -88,6 +94,55 @@ export default function Dashboard() {
       setNewLabel("");
       setNewUrl("");
     }
+  }
+
+  async function uploadQr(e) {
+    e.preventDefault();
+    setQrError("");
+    if (!qrLabel.trim() || !qrFile) return;
+
+    setUploadingQr(true);
+
+    const fileExt = qrFile.name.split(".").pop();
+    const filePath = `${profile.id}/${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("qr-codes")
+      .upload(filePath, qrFile);
+
+    if (uploadError) {
+      setQrError(uploadError.message);
+      setUploadingQr(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("qr-codes")
+      .getPublicUrl(filePath);
+
+    const { data, error } = await supabase
+      .from("links")
+      .insert({
+        profile_id: profile.id,
+        label: qrLabel.trim(),
+        url: urlData.publicUrl,
+        type: "qr",
+        image_url: urlData.publicUrl,
+        position: links.length,
+      })
+      .select()
+      .single();
+
+    if (!error) {
+      setLinks([...links, data]);
+      setQrLabel("");
+      setQrFile(null);
+      e.target.reset();
+    } else {
+      setQrError(error.message);
+    }
+
+    setUploadingQr(false);
   }
 
   async function deleteLink(id) {
@@ -129,6 +184,9 @@ export default function Dashboard() {
     );
   }
 
+  const regularLinks = links.filter((l) => l.type !== "qr");
+  const qrLinks = links.filter((l) => l.type === "qr");
+
   return (
     <div className="min-h-screen">
       <header className="max-w-3xl mx-auto px-6 py-8 flex items-center justify-between">
@@ -141,7 +199,6 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-3xl mx-auto px-6 pb-24 flex flex-col gap-10">
-        {/* Your page link */}
         <section className="bg-ink-surface border border-ink-border rounded-card p-6">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
@@ -159,7 +216,6 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* Profile info */}
         <section>
           <h2 className="font-display text-2xl mb-4">Profile</h2>
           <form onSubmit={saveProfile} className="flex flex-col gap-4 max-w-md">
@@ -192,7 +248,6 @@ export default function Dashboard() {
           </form>
         </section>
 
-        {/* Links */}
         <section>
           <h2 className="font-display text-2xl mb-4">Links</h2>
 
@@ -218,35 +273,100 @@ export default function Dashboard() {
           </form>
 
           <div className="flex flex-col gap-3">
-            {links.length === 0 && (
+            {regularLinks.length === 0 && (
               <p className="text-muted text-sm">
                 No links yet. Add your first one above.
               </p>
             )}
-            {links.map((link, i) => (
+            {regularLinks.map((link) => {
+              const i = links.findIndex((l) => l.id === link.id);
+              return (
+                <div
+                  key={link.id}
+                  className="flex items-center gap-3 bg-ink-surface border border-ink-border rounded-card px-4 py-3"
+                >
+                  <div className="flex flex-col">
+                    <button
+                      onClick={() => moveLink(i, -1)}
+                      disabled={i === 0}
+                      className="text-muted disabled:opacity-30 text-xs leading-none"
+                    >
+                      ▲
+                    </button>
+                    <button
+                      onClick={() => moveLink(i, 1)}
+                      disabled={i === links.length - 1}
+                      className="text-muted disabled:opacity-30 text-xs leading-none"
+                    >
+                      ▼
+                    </button>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium">{link.label}</div>
+                    <div className="text-xs text-muted truncate">{link.url}</div>
+                  </div>
+                  <button
+                    onClick={() => deleteLink(link.id)}
+                    className="text-sm text-muted hover:text-red-400"
+                  >
+                    Remove
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section>
+          <h2 className="font-display text-2xl mb-2">Payment QR codes</h2>
+          <p className="text-muted text-sm mb-4">
+            Upload a QR code image (GCash, Maya, bank transfer, etc). It'll
+            show as a button on your page &mdash; tapping it pops up the QR
+            code so people can scan it.
+          </p>
+
+          <form
+            onSubmit={uploadQr}
+            className="flex flex-col gap-3 mb-6 max-w-md bg-ink-surface border border-ink-border rounded-card p-4"
+          >
+            <input
+              value={qrLabel}
+              onChange={(e) => setQrLabel(e.target.value)}
+              placeholder="Label, e.g. GCash"
+              className="bg-ink border border-ink-border rounded-card px-3 py-2 text-sm outline-none"
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setQrFile(e.target.files?.[0] || null)}
+              className="text-sm text-muted file:mr-3 file:py-2 file:px-3 file:rounded-card file:border file:border-ink-border file:bg-ink file:text-paper file:text-sm"
+            />
+            {qrError && <p className="text-sm text-red-400">{qrError}</p>}
+            <button
+              type="submit"
+              disabled={uploadingQr}
+              className="self-start bg-brass text-ink px-4 py-2 rounded-card text-sm font-medium hover:brightness-110 disabled:opacity-60"
+            >
+              {uploadingQr ? "Uploading..." : "Upload QR code"}
+            </button>
+          </form>
+
+          <div className="flex flex-col gap-3">
+            {qrLinks.length === 0 && (
+              <p className="text-muted text-sm">No QR codes uploaded yet.</p>
+            )}
+            {qrLinks.map((link) => (
               <div
                 key={link.id}
                 className="flex items-center gap-3 bg-ink-surface border border-ink-border rounded-card px-4 py-3"
               >
-                <div className="flex flex-col">
-                  <button
-                    onClick={() => moveLink(i, -1)}
-                    disabled={i === 0}
-                    className="text-muted disabled:opacity-30 text-xs leading-none"
-                  >
-                    ▲
-                  </button>
-                  <button
-                    onClick={() => moveLink(i, 1)}
-                    disabled={i === links.length - 1}
-                    className="text-muted disabled:opacity-30 text-xs leading-none"
-                  >
-                    ▼
-                  </button>
-                </div>
+                <img
+                  src={link.image_url}
+                  alt={link.label}
+                  className="w-12 h-12 object-cover rounded-sm border border-ink-border"
+                />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium">{link.label}</div>
-                  <div className="text-xs text-muted truncate">{link.url}</div>
                 </div>
                 <button
                   onClick={() => deleteLink(link.id)}
