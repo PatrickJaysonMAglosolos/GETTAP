@@ -48,13 +48,11 @@ export default function Home() {
           <div className="tap-ring w-40 h-40" />
           <div className="tap-ring tap-ring-delay w-40 h-40" />
           <div className="tap-ring tap-ring-delay-2 w-40 h-40" />
-          <div className="relative w-56 h-36 bg-ink-surface border border-ink-border rounded-card shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)] p-5 flex flex-col justify-between rotate-[-6deg]">
-            <div className="w-8 h-6 rounded-sm bg-brass/80" />
-            <div>
-              <div className="font-display text-base">@yourname</div>
-              <div className="text-xs text-muted mt-1">GETTAP.co/yourname</div>
-            </div>
-          </div>
+          <img
+            src="/card.png"
+            alt="GETTAP card"
+            className="relative w-64 rounded-card shadow-[0_20px_60px_-15px_rgba(0,0,0,0.6)] rotate-[-6deg]"
+          />
         </div>
       </main>
 
