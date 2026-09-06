@@ -15,30 +15,30 @@ export default function Login() {
     setError("");
     setLoading(true);
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword(
-      { email, password }
-    );
+    const signInResult = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
 
-    if (signInError) {
-      setError(signInError.message);
+    if (signInResult.error) {
+      setError(signInResult.error.message);
       setLoading(false);
       return;
     }
 
-    const user = data.user;
+    const user = signInResult.data.user;
 
-    const { data: profile } = await supabase
+    const profileResult = await supabase
       .from("profiles")
       .select("id")
       .eq("id", user.id)
       .maybeSingle();
 
-    if (!profile) {
+    if (!profileResult.data) {
       const pendingUsername = router.query.pendingUsername || "";
       await supabase.from("profiles").insert({
         id: user.id,
-        username:
-          pendingUsername || `user${user.id.slice(0, 8)}`,
+        username: pendingUsername || "user" + user.id.slice(0, 8),
         display_name: pendingUsername || "New user",
       });
     }
@@ -51,7 +51,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <Link href="/" className="font-display text-lg">
-          Tapcard
+          GETTAP
         </Link>
         <h1 className="font-display text-3xl mt-6 mb-2">Welcome back</h1>
 
@@ -67,18 +67,30 @@ export default function Login() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={function (e) {
+                setEmail(e.target.value);
+              }}
               className="w-full bg-ink-surface border border-ink-border rounded-card px-3 py-2 outline-none text-sm"
               required
             />
           </div>
 
           <div>
-            <label className="text-sm text-muted block mb-1">Password</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm text-muted">Password</label>
+              <Link
+                href="/forgot-password"
+                className="text-sm text-muted hover:text-paper underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={function (e) {
+                setPassword(e.target.value);
+              }}
               className="w-full bg-ink-surface border border-ink-border rounded-card px-3 py-2 outline-none text-sm"
               required
             />
