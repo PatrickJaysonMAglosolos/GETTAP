@@ -27,7 +27,7 @@ export default function Home() {
             One tap. Every link you own.
           </h1>
           <p className="text-muted text-lg max-w-md mb-8">
-            Program a physical card with your Tapcard page. Hand it to
+            Program a physical card with your GETTAP page. Hand it to
             someone, they tap their phone against it, and every social link
             you have opens instantly &mdash; no typing, no searching.
           </p>
@@ -80,7 +80,7 @@ export default function Home() {
             <div className="font-display text-xl mb-2">Program the card</div>
             <p className="text-muted text-sm">
               From your dashboard, write your page's link straight to an NFC
-              card or sticker using your phone. No coding involved.
+              card.
             </p>
           </div>
           <div>
