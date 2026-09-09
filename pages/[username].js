@@ -30,7 +30,10 @@ export default function PublicProfile({ profile, links }) {
   const [openQr, setOpenQr] = useState(null);
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-6 py-16">
+    <div
+      className="min-h-screen flex flex-col items-center px-6 py-16 bg-cover bg-center bg-no-repeat bg-fixed"
+      style={{ backgroundImage: "url('/nfc-background.png')" }}
+    >
       <div className="w-full max-w-sm flex flex-col items-center text-center">
         <div className="w-16 h-16 rounded-full bg-ink-surface border border-ink-border flex items-center justify-center font-display text-2xl mb-5">
           {(profile.display_name || profile.username)[0].toUpperCase()}
