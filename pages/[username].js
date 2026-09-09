@@ -35,8 +35,16 @@ export default function PublicProfile({ profile, links }) {
       style={{ backgroundImage: "url('/nfc-background.png')" }}
     >
       <div className="w-full max-w-sm flex flex-col items-center text-center">
-        <div className="w-16 h-16 rounded-full bg-ink-surface border border-ink-border flex items-center justify-center font-display text-2xl mb-5">
-          {(profile.display_name || profile.username)[0].toUpperCase()}
+        <div className="w-16 h-16 rounded-full bg-ink-surface border border-ink-border flex items-center justify-center font-display text-2xl mb-5 overflow-hidden">
+          {profile.avatar_url ? (
+            <img
+              src={profile.avatar_url}
+              alt={profile.display_name || profile.username}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            (profile.display_name || profile.username)[0].toUpperCase()
+          )}
         </div>
         <h1 className="font-display text-2xl mb-1">
           {profile.display_name || profile.username}

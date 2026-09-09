@@ -20,6 +20,10 @@ export default function Dashboard() {
   const [uploadingQr, setUploadingQr] = useState(false);
   const [qrError, setQrError] = useState("");
 
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
+
   const loadData = useCallback(async (userId) => {
     const { data: profileData } = await supabase
       .from("profiles")
@@ -68,6 +72,48 @@ export default function Dashboard() {
       .update({ display_name: displayName, bio })
       .eq("id", profile.id);
     setSaving(false);
+  }
+
+  async function uploadAvatar(e) {
+    e.preventDefault();
+    setAvatarError("");
+    if (!avatarFile) return;
+
+    setUploadingAvatar(true);
+
+    const fileExt = avatarFile.name.split(".").pop();
+    const filePath = `${profile.id}/avatar.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, avatarFile, { upsert: true });
+
+    if (uploadError) {
+      setAvatarError(uploadError.message);
+      setUploadingAvatar(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(filePath);
+
+    // Add a cache-busting query so the browser doesn't show a stale cached image
+    const freshUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+    const { error } = await supabase
+      .from("profiles")
+      .update({ avatar_url: freshUrl })
+      .eq("id", profile.id);
+
+    if (!error) {
+      setProfile({ ...profile, avatar_url: freshUrl });
+      setAvatarFile(null);
+    } else {
+      setAvatarError(error.message);
+    }
+
+    setUploadingAvatar(false);
   }
 
   async function addLink(e) {
@@ -218,6 +264,37 @@ export default function Dashboard() {
 
         <section>
           <h2 className="font-display text-2xl mb-4">Profile</h2>
+
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-16 h-16 rounded-full bg-ink-surface border border-ink-border flex items-center justify-center font-display text-2xl overflow-hidden shrink-0">
+              {profile.avatar_url ? (
+                <img
+                  src={profile.avatar_url}
+                  alt="Profile picture"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                (profile.display_name || profile.username)[0].toUpperCase()
+              )}
+            </div>
+            <form onSubmit={uploadAvatar} className="flex items-center gap-3 flex-wrap">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                className="text-sm text-muted file:mr-3 file:py-2 file:px-3 file:rounded-card file:border file:border-ink-border file:bg-ink file:text-paper file:text-sm"
+              />
+              <button
+                type="submit"
+                disabled={uploadingAvatar || !avatarFile}
+                className="bg-brass text-ink px-4 py-2 rounded-card text-sm font-medium hover:brightness-110 disabled:opacity-60"
+              >
+                {uploadingAvatar ? "Uploading..." : "Upload picture"}
+              </button>
+            </form>
+          </div>
+          {avatarError && <p className="text-sm text-red-400 mb-4">{avatarError}</p>}
+
           <form onSubmit={saveProfile} className="flex flex-col gap-4 max-w-md">
             <div>
               <label className="text-sm text-muted block mb-1">
