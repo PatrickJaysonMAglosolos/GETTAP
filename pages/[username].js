@@ -64,7 +64,7 @@ export default function PublicProfile({ profile, links }) {
                 <button
                   key={link.id}
                   onClick={() => setOpenQr(link)}
-                  className="bg-ink-surface/40 border border-ink-border rounded-card py-3 px-5 text-sm font-medium hover:border-brass transition-colors"
+                  className="bg-ink-surface/30 border border-ink-border rounded-card py-3 px-5 text-sm font-medium hover:border-brass transition-colors"
                 >
                   {link.label}
                 </button>
@@ -76,7 +76,7 @@ export default function PublicProfile({ profile, links }) {
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-ink-surface/40 border border-ink-border rounded-card py-3 px-5 text-sm font-medium hover:border-brass transition-colors"
+                className="bg-ink-surface/30 border border-ink-border rounded-card py-3 px-5 text-sm font-medium hover:border-brass transition-colors"
               >
                 {link.label}
               </a>
