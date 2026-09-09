@@ -82,11 +82,11 @@ export default function Dashboard() {
     setUploadingAvatar(true);
 
     const fileExt = avatarFile.name.split(".").pop();
-    const filePath = `${profile.id}/avatar.${fileExt}`;
+    const filePath = `${profile.id}/${Date.now()}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(filePath, avatarFile, { upsert: true });
+      .upload(filePath, avatarFile);
 
     if (uploadError) {
       setAvatarError(uploadError.message);
@@ -98,16 +98,13 @@ export default function Dashboard() {
       .from("avatars")
       .getPublicUrl(filePath);
 
-    // Add a cache-busting query so the browser doesn't show a stale cached image
-    const freshUrl = `${urlData.publicUrl}?t=${Date.now()}`;
-
     const { error } = await supabase
       .from("profiles")
-      .update({ avatar_url: freshUrl })
+      .update({ avatar_url: urlData.publicUrl })
       .eq("id", profile.id);
 
     if (!error) {
-      setProfile({ ...profile, avatar_url: freshUrl });
+      setProfile({ ...profile, avatar_url: urlData.publicUrl });
       setAvatarFile(null);
     } else {
       setAvatarError(error.message);
