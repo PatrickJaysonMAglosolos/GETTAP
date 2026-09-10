@@ -150,7 +150,7 @@ export default function Dashboard() {
     if (!qrLabel.trim() || !qrFile) return;
 
     if (qrLinks.length >= maxQr) {
-      setQrError("You can only have 1 QR code. Remove the existing one to upload a new one.");
+      setQrError(`You can only have ${maxQr} QR code(s). Remove the existing one to upload a new one.`);
       return;
     }
 
