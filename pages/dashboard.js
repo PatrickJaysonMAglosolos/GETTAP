@@ -117,6 +117,11 @@ export default function Dashboard() {
     e.preventDefault();
     if (!newLabel.trim() || !newUrl.trim()) return;
 
+    if (regularLinks.length >= 3) {
+      alert("You can only add up to 3 links. Remove one to add another.");
+      return;
+    }
+
     let url = newUrl.trim();
     if (!/^https?:\/\//i.test(url)) url = "https://" + url;
 
@@ -143,6 +148,11 @@ export default function Dashboard() {
     e.preventDefault();
     setQrError("");
     if (!qrLabel.trim() || !qrFile) return;
+
+    if (qrLinks.length >= 1) {
+      setQrError("You can only have 1 QR code. Remove the existing one to upload a new one.");
+      return;
+    }
 
     setUploadingQr(true);
 
@@ -208,6 +218,9 @@ export default function Dashboard() {
     );
   }
 
+  const regularLinks = links.filter((l) => l.type !== "qr");
+  const qrLinks = links.filter((l) => l.type === "qr");
+
   const profileUrl =
     typeof window !== "undefined" && profile
       ? `${window.location.origin}/${profile.username}`
@@ -226,9 +239,6 @@ export default function Dashboard() {
       </div>
     );
   }
-
-  const regularLinks = links.filter((l) => l.type !== "qr");
-  const qrLinks = links.filter((l) => l.type === "qr");
 
   return (
     <div className="min-h-screen">
@@ -325,26 +335,32 @@ export default function Dashboard() {
         <section>
           <h2 className="font-display text-2xl mb-4">Links</h2>
 
-          <form onSubmit={addLink} className="flex gap-3 mb-6 flex-wrap">
-            <input
-              value={newLabel}
-              onChange={(e) => setNewLabel(e.target.value)}
-              placeholder="Label, e.g. Instagram"
-              className="flex-1 min-w-[140px] bg-ink-surface border border-ink-border rounded-card px-3 py-2 text-sm outline-none"
-            />
-            <input
-              value={newUrl}
-              onChange={(e) => setNewUrl(e.target.value)}
-              placeholder="https://..."
-              className="flex-1 min-w-[180px] bg-ink-surface border border-ink-border rounded-card px-3 py-2 text-sm outline-none"
-            />
-            <button
-              type="submit"
-              className="border border-ink-border px-4 py-2 rounded-card text-sm hover:border-muted"
-            >
-              Add
-            </button>
-          </form>
+          {regularLinks.length >= 3 ? (
+            <p className="text-sm text-muted mb-6 bg-ink-surface border border-ink-border rounded-card px-4 py-3">
+              You've reached the 3-link limit. Remove a link below to add a new one.
+            </p>
+          ) : (
+            <form onSubmit={addLink} className="flex gap-3 mb-6 flex-wrap">
+              <input
+                value={newLabel}
+                onChange={(e) => setNewLabel(e.target.value)}
+                placeholder="Label, e.g. Instagram"
+                className="flex-1 min-w-[140px] bg-ink-surface border border-ink-border rounded-card px-3 py-2 text-sm outline-none"
+              />
+              <input
+                value={newUrl}
+                onChange={(e) => setNewUrl(e.target.value)}
+                placeholder="https://..."
+                className="flex-1 min-w-[180px] bg-ink-surface border border-ink-border rounded-card px-3 py-2 text-sm outline-none"
+              />
+              <button
+                type="submit"
+                className="border border-ink-border px-4 py-2 rounded-card text-sm hover:border-muted"
+              >
+                Add
+              </button>
+            </form>
+          )}
 
           <div className="flex flex-col gap-3">
             {regularLinks.length === 0 && (
@@ -399,31 +415,37 @@ export default function Dashboard() {
             code so people can scan it.
           </p>
 
-          <form
-            onSubmit={uploadQr}
-            className="flex flex-col gap-3 mb-6 max-w-md bg-ink-surface border border-ink-border rounded-card p-4"
-          >
-            <input
-              value={qrLabel}
-              onChange={(e) => setQrLabel(e.target.value)}
-              placeholder="Label, e.g. GCash"
-              className="bg-ink border border-ink-border rounded-card px-3 py-2 text-sm outline-none"
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => setQrFile(e.target.files?.[0] || null)}
-              className="text-sm text-muted file:mr-3 file:py-2 file:px-3 file:rounded-card file:border file:border-ink-border file:bg-ink file:text-paper file:text-sm"
-            />
-            {qrError && <p className="text-sm text-red-400">{qrError}</p>}
-            <button
-              type="submit"
-              disabled={uploadingQr}
-              className="self-start bg-brass text-ink px-4 py-2 rounded-card text-sm font-medium hover:brightness-110 disabled:opacity-60"
+          {qrLinks.length >= 1 ? (
+            <p className="text-sm text-muted mb-6 max-w-md bg-ink-surface border border-ink-border rounded-card px-4 py-3">
+              You've reached the 1 QR code limit. Remove the existing one below to upload a new one.
+            </p>
+          ) : (
+            <form
+              onSubmit={uploadQr}
+              className="flex flex-col gap-3 mb-6 max-w-md bg-ink-surface border border-ink-border rounded-card p-4"
             >
-              {uploadingQr ? "Uploading..." : "Upload QR code"}
-            </button>
-          </form>
+              <input
+                value={qrLabel}
+                onChange={(e) => setQrLabel(e.target.value)}
+                placeholder="Label, e.g. GCash"
+                className="bg-ink border border-ink-border rounded-card px-3 py-2 text-sm outline-none"
+              />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setQrFile(e.target.files?.[0] || null)}
+                className="text-sm text-muted file:mr-3 file:py-2 file:px-3 file:rounded-card file:border file:border-ink-border file:bg-ink file:text-paper file:text-sm"
+              />
+              {qrError && <p className="text-sm text-red-400">{qrError}</p>}
+              <button
+                type="submit"
+                disabled={uploadingQr}
+                className="self-start bg-brass text-ink px-4 py-2 rounded-card text-sm font-medium hover:brightness-110 disabled:opacity-60"
+              >
+                {uploadingQr ? "Uploading..." : "Upload QR code"}
+              </button>
+            </form>
+          )}
 
           <div className="flex flex-col gap-3">
             {qrLinks.length === 0 && (
