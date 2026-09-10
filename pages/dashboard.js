@@ -117,8 +117,8 @@ export default function Dashboard() {
     e.preventDefault();
     if (!newLabel.trim() || !newUrl.trim()) return;
 
-    if (regularLinks.length >= 3) {
-      alert("You can only add up to 3 links. Remove one to add another.");
+    if (regularLinks.length >= maxLinks) {
+      alert(`You can only add up to ${maxLinks} links. Remove one to add another.`);
       return;
     }
 
@@ -149,7 +149,7 @@ export default function Dashboard() {
     setQrError("");
     if (!qrLabel.trim() || !qrFile) return;
 
-    if (qrLinks.length >= 1) {
+    if (qrLinks.length >= maxQr) {
       setQrError("You can only have 1 QR code. Remove the existing one to upload a new one.");
       return;
     }
@@ -220,6 +220,8 @@ export default function Dashboard() {
 
   const regularLinks = links.filter((l) => l.type !== "qr");
   const qrLinks = links.filter((l) => l.type === "qr");
+  const maxLinks = profile?.max_links ?? 3;
+  const maxQr = profile?.max_qr ?? 1;
 
   const profileUrl =
     typeof window !== "undefined" && profile
@@ -335,9 +337,9 @@ export default function Dashboard() {
         <section>
           <h2 className="font-display text-2xl mb-4">Links</h2>
 
-          {regularLinks.length >= 3 ? (
+          {regularLinks.length >= maxLinks ? (
             <p className="text-sm text-muted mb-6 bg-ink-surface border border-ink-border rounded-card px-4 py-3">
-              You've reached the 3-link limit. Remove a link below to add a new one.
+              You've reached the {maxLinks}-link limit. Remove a link below to add a new one.
             </p>
           ) : (
             <form onSubmit={addLink} className="flex gap-3 mb-6 flex-wrap">
@@ -415,9 +417,9 @@ export default function Dashboard() {
             code so people can scan it.
           </p>
 
-          {qrLinks.length >= 1 ? (
+          {qrLinks.length >= maxQr ? (
             <p className="text-sm text-muted mb-6 max-w-md bg-ink-surface border border-ink-border rounded-card px-4 py-3">
-              You've reached the 1 QR code limit. Remove the existing one below to upload a new one.
+              You've reached the {maxQr} QR code limit. Remove the existing one below to upload a new one.
             </p>
           ) : (
             <form
